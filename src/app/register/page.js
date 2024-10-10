@@ -1,20 +1,21 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false); // Loading state to disable button during API call
 
   const handleInputChange = (e) => {
     setFormData({
@@ -35,15 +36,37 @@ export default function RegisterPage() {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formErrors = validateForm();
     if (Object.keys(formErrors).length === 0) {
-      // Proceed with registration logic (e.g., API call)
-      console.log(formData); // For demonstration purposes
-      router.push("/"); // Redirect to dashboard after successful registration
+      setErrors({});
+      setIsLoading(true);
+
+      try {
+        const response = await fetch("/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Registration successful, redirect to homepage or login page
+          router.push("/"); // Redirect to homepage
+        } else {
+          setErrors({ general: data.message }); // Set error from backend
+        }
+      } catch (error) {
+        setErrors({ general: "Failed to register. Please try again later." });
+      } finally {
+        setIsLoading(false);
+      }
     } else {
-      setErrors(formErrors);
+      setErrors(formErrors); // Set form validation errors
     }
   };
 
@@ -112,17 +135,21 @@ export default function RegisterPage() {
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white"
               placeholder="Confirm your password"
             />
-            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+            )}
           </div>
           <Button
             type="submit"
+            disabled={isLoading} // Disable the button while loading
             className="w-full py-3 bg-black dark:bg-white text-white dark:text-black font-semibold rounded-lg transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-300 transform hover:scale-105"
           >
-            Register
+            {isLoading ? "Registering..." : "Register"} {/* Show loading text */}
           </Button>
+          {errors.general && <p className="text-red-500 text-sm mt-1">{errors.general}</p>} {/* Display backend errors */}
         </form>
         <p className="text-center text-gray-600 dark:text-gray-400 mt-6">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link href="/login" className="text-black dark:text-white font-semibold hover:underline">
             Login
           </Link>
