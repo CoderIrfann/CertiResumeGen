@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"; // Make sure this path is correct
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState({});
-  
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
@@ -38,9 +38,9 @@ export default function RegisterPage() {
     e.preventDefault();
     const formErrors = validateForm();
     if (Object.keys(formErrors).length === 0) {
-      // Proceed with registration logic
-      console.log(formData);
-      router.push("/dashboard"); // redirect to dashboard after successful registration
+      // Proceed with registration logic (e.g., API call)
+      console.log(formData); // For demonstration purposes
+      router.push("/"); // Redirect to dashboard after successful registration
     } else {
       setErrors(formErrors);
     }
